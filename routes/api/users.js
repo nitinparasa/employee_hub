@@ -1,12 +1,17 @@
 const express = require("express");
-const User = require("../../models/Users");
+const router = express.Router();
 const gravatar = require("gravatar");
 const bCrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const keys = require("../../config/keys");
 const passport = require("passport");
 
-const router = express.Router();
+// load input validator
+const validateRegisterInput = require("../../validation/registerValidator");
+const validateLoginInput = require("../../validation/loginValidator");
+
+//load user model
+const User = require("../../models/Users");
 
 // @route GET to api/users/test
 // @desc test users route
@@ -19,9 +24,17 @@ router.get("/test", (req, res) => {
 // @desc register the user
 // @access public
 router.post("/register", (req, res) => {
+  const { errors, isValid } = validateRegisterInput(req.body);
+
+  // check for errors
+  if (!isValid) {
+    return res.status(400).json(errors);
+  }
+
   User.findOne({ email: req.body.email }).then(user => {
     if (user) {
-      return res.status(400).json({ email: "Email already exists" });
+      errors.email = "Email already exists";
+      return res.status(400).json(errors);
     } else {
       const avatar = gravatar.url(req.body.email, {
         s: "200",
@@ -53,13 +66,21 @@ router.post("/register", (req, res) => {
 // @desc Login User / returning the JWT Token
 // @access public
 router.post("/login", (req, res) => {
+  const { errors, isValid } = validateLoginInput(req.body);
+
+  // check for errors
+  if (!isValid) {
+    return res.status(400).json(errors);
+  }
+
   const email = req.body.email;
   const password = req.body.password;
 
   //Find user by email
   User.findOne({ email }).then(user => {
     if (!user) {
-      res.status(404).json({ email: "User does not exist" });
+      errors.email = "User not found";
+      res.status(404).json(errors);
     }
 
     //Check the password
@@ -83,7 +104,8 @@ router.post("/login", (req, res) => {
           }
         );
       } else {
-        return res.status(400).json({ password: "Passwords do not match" });
+        errors.password = "Password incorrect";
+        return res.status(400).json(errors);
       }
     });
   });
