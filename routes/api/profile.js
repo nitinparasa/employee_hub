@@ -284,4 +284,6 @@ router.post(
   }
 );
 
+// @route DELETE user and profile - yet to be written
+
 module.exports = router;
