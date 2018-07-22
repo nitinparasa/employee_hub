@@ -196,7 +196,7 @@ router.post(
 // @desc Add education to profile
 // @access private
 
-router.delete(
+router.post(
   "/education",
   passport.authenticate("jwt", { session: false }),
   (req, res) => {
@@ -258,7 +258,7 @@ router.delete(
 // @desc Delete education to profile
 // @access private
 
-router.post(
+router.delete(
   "/education/:education_id",
   passport.authenticate("jwt", { session: false }),
   (req, res) => {
@@ -285,5 +285,16 @@ router.post(
 );
 
 // @route DELETE user and profile - yet to be written
+router.delete(
+  "/",
+  passport.authenticate("jwt", { session: false }),
+  (req, res) => {
+    Profile.findOneAndRemove({ user: req.user.id }).then(() => {
+      Users.findOneAndRemove({ _id: req.user.id }).then(() =>
+        res.json({ success: true })
+      );
+    });
+  }
+);
 
 module.exports = router;
