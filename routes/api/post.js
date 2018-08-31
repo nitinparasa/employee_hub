@@ -53,7 +53,7 @@ router.post(
       return res.status(400).json(errors);
     }
 
-    const newPost = new post({
+    const newPost = new Post({
       text: req.body.text,
       name: req.body.name,
       avatar: req.body.avatar,
